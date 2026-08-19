@@ -2,30 +2,35 @@ name: Yayini Guncelle
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Her 5 dakikada bir çalıştırır
-  workflow_dispatch: # Manuel tetikleme butonu ekler
+    - cron: '*/5 * * * *' # Her 5 dakikada bir otomatik çalışır
+  workflow_dispatch: # Actions sekmesinden manuel tetiklemeye (Run workflow) izin verir
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Depoyu Kopyala
-        uses: actions/checkout@v3
 
+    steps:
+      # 1. Depoyu sanal sunucuya kopyalar (Uyarıları önlemek için v4 güncel sürümü)
+      - name: Depoyu Kopyala
+        uses: actions/checkout@v4
+
+      # 2. Python'u kurar
       - name: Python'u Kur
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      # 3. Gerekli kütüphaneleri yükler ve scripti çalıştırır
       - name: Kütüphaneleri Yükle ve Scripti Çalıştır
         run: |
           pip install -r requirements.txt
           python scraper.py
 
+      # 4. Değişiklikleri kaydeder ve GitHub'a yükler (Hata almamak için güncellendi)
       - name: Yeni Linki GitHub'a Kaydet (Push)
         run: |
           git config --global user.name "Bot"
           git config --global user.email "bot@example.com"
-          git add ceydus2.m3u8
-          git commit -m "Yayini guncelle" || exit 0
+          git add .
+          git commit -m "Yayini guncelle" || echo "Değişiklik yok veya dosya oluşturulmadı"
           git push
